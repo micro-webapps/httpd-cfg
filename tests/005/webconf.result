@@ -1,0 +1,12 @@
+<Directory "/usr/share/wordpress/wp-content/plugins/akismet">
+    <FilesMatch "\.(php|txt)$">
+        Order Deny,Allow
+        Deny from all
+    </FilesMatch>
+</Directory>
+
+Alias /wordpress "/usr/share/wordpress"
+<Directory "/usr/share/wordpress">
+    Require local
+</Directory>
+

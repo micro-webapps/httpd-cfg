@@ -1,0 +1,14 @@
+{
+    "virtualhost": "domain.tld",
+    "certificate": "/etc/pki/tls/certs/domain.tld.crt",
+    "certificate_key": "/etc/pki/tls/private/domain.tld.key",
+    "redirect": {
+        "from": "/",
+        "to": "https://domain.tld/"
+    },
+    "directories": {
+        "/var/www/my-static-dir": {
+            "alias": "/static"
+        }
+    }
+}

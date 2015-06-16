@@ -1,0 +1,15 @@
+{
+    "directories": {
+        "/usr/share/wordpress": {
+            "alias": "/wordpress",
+            "allow": "local"
+        },
+        "/usr/share/wordpress/wp-content/plugins/akismet": {
+            "match": {
+                "regex": "\\.(php|txt)$",
+                "allow": "none"
+            }
+        }
+    }
+}
+

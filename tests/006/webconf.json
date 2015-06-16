@@ -1,0 +1,5 @@
+{
+    "virtualhost": "webapp.domain.tld",
+    "proxy_hostname": "localhost",
+    "proxy_port": "9000"
+}
