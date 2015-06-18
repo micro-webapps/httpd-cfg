@@ -204,6 +204,10 @@ class HTTPDProxyGenerator:
                 self.p.write("ProxyPassReverse {0}", backend_url)
             else:
                 self.p.write("ProxyPass {0} {1}", frontend_url, backend_address)
+                # ProxyPassReverse should end with '/', otherwise the Location rewrite
+                # won't work correctly.
+                if frontend_url[-1] != "/":
+                    frontend_url += "/"
                 self.p.write("ProxyPassReverse {0} {1}", frontend_url, backend_url)
 
     def write_sethandler(self, proxy_cfg):

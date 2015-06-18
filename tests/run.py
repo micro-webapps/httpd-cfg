@@ -23,6 +23,7 @@ def runtest(d):
     if ret != 0:
         print(bcolors.FAIL + "*** " + d + ": FAILED" + bcolors.ENDC)
         if len(sys.argv) == 2:
+            del sys.argv[1]
             os.system("mv {0}/*.conf {1}/webconf.result ".format(d, d))
         else:
             sys.exit(1)
