@@ -548,7 +548,9 @@ class HTTPDGenerator:
             # Run the "redirects" handler and set only_redirect to True.
             for app_cfg in vhost_cfg:
                 self.app_name = app_cfg["__name__"]
-                # TODO: Support multiple redirects
+                # We are not supporting multiple redirects options, but this is
+                # OK. If there is redirection for "/", it is invalid to add
+                # any extra redirection.
                 if "redirects" in app_cfg and app_cfg["redirects"].items()[0][0] == "/" and enable_ssl:
                     self.run_directive_handlers(app_cfg, "redirects")
                     only_redirect = True
@@ -579,7 +581,9 @@ class HTTPDGenerator:
             # redirect to ourselves.
             for app_cfg in vhost_cfg:
                 self.app_name = app_cfg["__name__"]
-                # TODO: Support multiple redirects
+                # We are not supporting multiple redirects options, but this is
+                # OK. If there is redirection for "/", it is invalid to add
+                # any extra redirection.
                 if "redirects" in app_cfg and app_cfg["redirects"].items()[0][00] != "/":
                     self.run_directive_handlers(app_cfg, "redirects")
 
