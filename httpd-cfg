@@ -201,7 +201,7 @@ class HTTPDProxyGenerator:
                 self.p.write("ProxyPassReverse {0} {1}", frontend_url, backend_url)
         else:
             if "location" in self.p.nested_sections:
-                self.p.write("ProxyPass {1}", backend_address)
+                self.p.write("ProxyPass {0}", backend_address)
                 self.p.write("ProxyPassReverse {0}", backend_url)
             else:
                 self.p.write("ProxyPass {0} {1}", frontend_url, backend_address)
@@ -328,6 +328,12 @@ class HTTPDMatchGenerator:
         if not "match" in cfg:
             return True
 
+        # This is set by LocationMatch, so we write just the single
+        # match regex configuration from the match directive.
+        if "__regex__" in cfg:
+            regex = cfg["__regex__"]
+            return self.write_match(regex, cfg["match"][regex])
+
         for regex, match in cfg["match"].items():
             if self.write_match(regex, match) == False:
                 return False
@@ -393,6 +399,38 @@ class HTTPDLocationsGenerator:
         self.p = parent
         self.name = "locations"
 
+    def write_match_location(self, location, cfg, regex):
+        if location[-1] != "/":
+            location += "/"
+        self.p.write("<LocationMatch \"^{0}(.*{1})\">", location, regex[:-1])
+        cfg["__regex__"] = regex
+
+        self.p.nested_sections.insert(0, "location")
+        self.p.run_section_handlers(cfg, enable = ["match"])
+        self.p.run_directive_handlers(cfg, enable = ["match"])
+        self.p.nested_sections.pop(0)
+
+        del cfg["__regex__"]
+        self.p.write("</LocationMatch>")
+        self.p.write("")
+
+    def write_plain_location(self, location, cfg):
+        self.p.write("<Location \"{0}\">", location)
+
+        self.p.nested_sections.insert(0, "location")
+        self.p.run_section_handlers(cfg, disable = ["match"])
+        self.p.run_directive_handlers(cfg, disable = ["match"])
+        self.p.nested_sections.pop(0)
+
+        self.p.write("</Location>")
+        self.p.write("")
+
+    def write_location(self, location, cfg, regex = None):
+        if regex:
+            self.write_match_location(location, cfg, regex)
+        else:
+            self.write_plain_location(location, cfg)
+
     def handle(self, _cfg):
         if not "locations" in _cfg:
             return True
@@ -402,26 +440,28 @@ class HTTPDLocationsGenerator:
             if len(location) == 0:
                 continue
 
-            # In case of "match" in cfg, use LocationMatch and Location otherwise.
-            if "match" in cfg:
-                if location[-1] != "/":
-                    location += "/"
-                # TODO: Support Location with multiple match, right now,
-                # we just get the first one and ignore the rest...
-                self.p.write("<LocationMatch \"^{0}(.*{1})\">", location, cfg["match"].items()[0][0][:-1])
-            else:
-                self.p.write("<Location \"{0}\">", location)
+            # Check if there is any "match" directive. If it is, we will use
+            # LocationMatch instead of Location later for that config.
+            # Also check if we have *only* "match" directive there. In that
+            # case, we can omit writing normal "Location" later.
+            has_match = False
+            has_only_match = True
+            for option in cfg:
+                if option == "match":
+                    has_match = True
+                else:
+                    has_only_match = False
 
-            self.p.nested_sections.insert(0, "location")
-            self.p.run_section_handlers(cfg)
-            self.p.run_directive_handlers(cfg)
-            self.p.nested_sections.pop(0)
+            # Write the LocationMatch configurations.
+            if has_match:
+                for regex in cfg["match"]:
+                    self.write_location(location, cfg, regex)
 
-            if "match" in cfg:
-                self.p.write("</LocationMatch>")
-            else:
-                self.p.write("</Location>")
-            self.p.write("")
+            # In case we have anything else except "match", write it as
+            # "Location".
+            if not has_only_match:
+                self.write_location(location, cfg)
+
         return True
 
 class HTTPDGenerator:

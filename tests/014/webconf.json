@@ -1,0 +1,17 @@
+{
+    "virtualhost": "domain.tld",
+    "directories": {
+        "/usr/share/wordpress": {
+            "alias": "/blog",
+            "index": "index.php"
+        }
+    },
+    "locations": {
+        "/blog": {
+            "proxy_protocol": "fcgi://",
+            "proxy_hostname": "localhost",
+            "proxy_port": "9000",
+            "proxy_backend_alias": "/usr/share/wordpress3/$1"
+        }
+    }
+}
