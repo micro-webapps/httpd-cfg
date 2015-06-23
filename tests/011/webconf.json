@@ -6,8 +6,9 @@
     "proxy_backend_alias": "/",
     "certificate": "certificate.crt",
     "certificate_key": "certificate.key",
-    "redirect": {
-        "from": "/",
-        "to": "https://localhost"
+    "redirects": {
+        "/": {
+            "to": "https://localhost"
+        }
     }
 }

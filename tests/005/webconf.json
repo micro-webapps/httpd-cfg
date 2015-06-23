@@ -6,8 +6,9 @@
         },
         "/usr/share/wordpress/wp-content/plugins/akismet": {
             "match": {
-                "regex": "\\.(php|txt)$",
-                "allow": "none"
+                "\\.(php|txt)$": {
+                    "allow": "none"
+                }
             }
         }
     }

@@ -9,12 +9,13 @@
     "locations": {
         "/blog": {
             "match": {
-                "regex": "\\.php$",
-                "proxy_protocol": "fcgi://",
-                "proxy_hostname": "localhost",
-                "proxy_port": "9000",
-                "proxy_backend_alias": "/usr/share/wordpress/$1",
-                "allow": "all"
+                "\\.php$": {
+                    "proxy_protocol": "fcgi://",
+                    "proxy_hostname": "localhost",
+                    "proxy_port": "9000",
+                    "proxy_backend_alias": "/usr/share/wordpress/$1",
+                    "allow": "all"
+                }
             }
         }
     }
