@@ -9,6 +9,10 @@ from fcgi import *
 import http.client
 import time
 
+HTTPD_BINARY = "httpd"
+if os.path.exists("/usr/sbin/apache2"):
+    HTTPD_BINARY = "apache2"
+
 try:
     import SocketServer
 except:
@@ -89,10 +93,10 @@ def test_do_requests(d):
     server_8081, thread_8081 = start_server(8081)
 
     
-    os.system("killall httpd >/dev/null 2>&1")
+    os.system("killall " + HTTPD_BINARY + " >/dev/null 2>&1")
     os.system("sed -i 's|\"\\./|\"" + os.getcwd() + "/apache-test/t/|g' " + d + "/*.conf")
     #print("sed -i 's|\"./|" + os.getcwd() + "/apache-test/t/|g' " + d + "/*.conf")
-    os.system("httpd -f ./httpd.conf -d ./ -c \"Include ../../" + d + "/*.conf\"")
+    os.system(HTTPD_BINARY + " -f ./httpd.conf -d ./ -c \"Include ../../" + d + "/*.conf\"")
     wait_for_url("http::/localhost:9090")
 
     os.chdir(d)
@@ -101,7 +105,7 @@ def test_do_requests(d):
     if ret != 0:
         print(bcolors.FAIL + "*** " + d + ": FAILED" + bcolors.ENDC)
         print("requests.sh returned an error")
-    os.system("killall httpd")
+    os.system("killall " + HTTPD_BINARY)
 
     server_8080.shutdown()
     server_8081.shutdown()
