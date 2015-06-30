@@ -3,6 +3,7 @@
 cd tests
 ./run.py
 RET=$?
+cat /home/travis/build/micro-webapps/httpd-cfg/tests/apache-test/t/conf/httpd.conf
 cd ..
 if [ $RET -ne 0 ]; then
     exit 1
