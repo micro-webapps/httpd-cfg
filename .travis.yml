@@ -14,6 +14,7 @@ script:
   - sudo cp .travis.httpd.conf /etc/apache2/apache2.conf
   - sudo cp -a -R /etc/apache2/mods-available/proxy* /etc/apache2/mods-enabled/
   - ./runtests
+  - cat /home/travis/build/micro-webapps/httpd-cfg/tests/apache-test/t/logs/error_log
   - cat /home/travis/build/micro-webapps/httpd-cfg/tests/apache-test/t/conf/httpd.conf
 branches:
   only:
