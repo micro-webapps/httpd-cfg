@@ -1,7 +1,7 @@
 {
-    "virtualhost": "domain.tld",
+    "virtualhost": "localhost",
     "directories": {
-        "/usr/share/wordpress": {
+        "./my-static-dir": {
             "alias": "/blog",
             "index": "index.php"
         }
@@ -9,17 +9,17 @@
     "locations": {
         "/blog": {
             "match": {
-                "\\.php$": {
+                "\\.txt$": {
                     "proxy_protocol": "fcgi://",
                     "proxy_hostname": "localhost",
-                    "proxy_port": "9000",
+                    "proxy_port": "8080",
                     "proxy_backend_alias": "/usr/share/wordpress/$1",
                     "allow": "all"
                 },
-                "\\.php5$": {
+                "\\.php$": {
                     "proxy_protocol": "fcgi://",
                     "proxy_hostname": "localhost",
-                    "proxy_port": "9000",
+                    "proxy_port": "8081",
                     "proxy_backend_alias": "/usr/share/wordpress/$1",
                     "allow": "all"
                 }

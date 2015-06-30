@@ -4,6 +4,6 @@
     "virtualhost": "localhost",
     "proxy_alias": "/blog",
     "proxy_backend_alias": "/",
-    "certificate": "certificate.crt",
-    "certificate_key": "certificate.key"
+    "certificate": "./010/localhost.crt",
+    "certificate_key": "./010/localhost.key"
 }

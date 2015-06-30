@@ -1,7 +1,8 @@
 {
-    "virtualhost": "domain.tld",
+    "virtualhost": "localhost",
+    "index": "index.html",
     "directories": {
-        "/var/www/my-static-dir": {
+        "./my-static-dir": {
             "alias": "/static"
         }
     }

@@ -1,9 +1,9 @@
 {
-    "virtualhost": "domain.tld",
-    "certificate": "/etc/pki/tls/certs/domain.tld.crt",
-    "certificate_key": "/etc/pki/tls/private/domain.tld.key",
+    "virtualhost": "localhost",
+    "certificate": "./003/localhost.crt",
+    "certificate_key": "./003/localhost.key",
     "directories": {
-        "/var/www/my-static-dir": {
+        "./my-static-dir": {
             "alias": "/static"
         }
     }

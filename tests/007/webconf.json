@@ -1,8 +1,8 @@
 {
-    "virtualhost": "webapp.domain.tld",
+    "virtualhost": "localhost",
     "proxy_protocol": "http://",
     "proxy_hostname": "localhost",
-    "proxy_port": "9000",
+    "proxy_port": "8080",
     "proxy_alias": "/",
     "proxy_backend_alias": "/"
 }

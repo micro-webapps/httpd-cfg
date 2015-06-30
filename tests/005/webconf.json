@@ -1,10 +1,10 @@
 {
+    "virtualhost": "localhost",
     "directories": {
-        "/usr/share/wordpress": {
-            "alias": "/wordpress",
-            "allow": "local"
+        "./my-static-dir": {
+            "alias": "/static"
         },
-        "/usr/share/wordpress/wp-content/plugins/akismet": {
+        "./my-static-dir/test": {
             "match": {
                 "\\.(php|txt)$": {
                     "allow": "none"
@@ -13,4 +13,5 @@
         }
     }
 }
+
 

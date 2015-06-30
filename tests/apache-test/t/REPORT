@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+# WARNING: this file is generated, do not edit
+# generated on Mon Jun 29 13:31:12 2015
+# 01: lib/Apache/TestConfig.pm:961
+# 02: lib/Apache/TestConfig.pm:1051
+# 03: lib/Apache/TestReport.pm:45
+# 04: Makefile.PL:63
+
+BEGIN { eval { require blib && blib->import; } }
+
+use strict;
+use warnings FATAL => 'all';
+
+use lib qw(
+);
+
+
+use Apache::TestReport;
+Apache::TestReport->new(@ARGV)->run;

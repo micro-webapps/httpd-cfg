@@ -2,9 +2,10 @@ language: cpp
 compiler:
   - gcc
 install:
+  - sudo add-apt-repository ppa:apache-helpdesk/httpd-ppa -y
   - sudo apt-get -qq update
-  - sudo apt-get -qq install python3
-script:
+  - sudo apt-get -qq install python3 apache2
+cript:
   - ./runtests
 branches:
   only:

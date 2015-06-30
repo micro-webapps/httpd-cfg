@@ -4,11 +4,11 @@
     "virtualhost": "localhost",
     "proxy_alias": "/blog",
     "proxy_backend_alias": "/",
-    "certificate": "certificate.crt",
-    "certificate_key": "certificate.key",
+    "certificate": "./011/localhost.crt",
+    "certificate_key": "./011/localhost.key",
     "redirects": {
         "/": {
-            "to": "https://localhost"
+            "to": "https://localhost:9443"
         }
     }
 }
