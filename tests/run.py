@@ -133,7 +133,7 @@ def runtest(d):
     return ret
 
 if not os.path.exists("./httpd.conf"):
-    os.system("cd apache-test; perl Makefile.PL; make; t/TEST -clean; t/TEST -trace=debug; cd ..")
+    os.system("cd apache-test; perl Makefile.PL; make; t/TEST -clean; t/TEST; cd ..")
 os.system("cp -a -R apache-test/t/conf/httpd.conf .")
 os.system("cp -a -R my-static-dir apache-test/t")
 os.system("cp -a -R 0* apache-test/t")
