@@ -6,7 +6,10 @@ install:
   - sudo apt-get -qq update
   - sudo apt-get -qq install python3 apache2 apache2-mpm-prefork
 script:
+  - cat /etc/apache2/mods-enabled/* /etc/apache2/apache2.conf > /etc/apache2/apache2.test
+  - mv /etc/apache2/apache2.test /etc/apache2/apache2.conf
   - ./runtests
+  - cat /home/travis/build/micro-webapps/httpd-cfg/tests/apache-test/t/conf/httpd.conf
 branches:
   only:
     - master
