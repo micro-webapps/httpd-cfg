@@ -414,6 +414,7 @@ sub inherit_config {
         }
     }
 
+    $self->inherit_config_file_or_directory("/etc/apache2/apache2.conf") if "/etc/apache2/apache2.conf";
     $self->inherit_config_file_or_directory($file) if $file;
     $self->inherit_config_file_or_directory($extra_file) if $extra_file;
 
