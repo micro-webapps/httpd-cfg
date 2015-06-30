@@ -9,7 +9,8 @@ script:
   #- sudo sh -c "cat /etc/apache2/mods-enabled/* /etc/apache2/apache2.conf > /etc/apache2/apache2.test"
   #- sudo mv /etc/apache2/apache2.test /etc/apache2/apache2.conf
   #- sudo cat /etc/apache2/apache2.conf
-  - sudo cp /etc/apache2/apache2.conf /etc/apache2/httpd.conf
+  - sudo cp .travis.httpd.conf /etc/apache2/httpd.conf
+  - sudo cp .travis.httpd.conf /etc/apache2/apache2.conf
   - ./runtests
   - cat /home/travis/build/micro-webapps/httpd-cfg/tests/apache-test/t/conf/httpd.conf
 branches:
