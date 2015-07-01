@@ -19,13 +19,16 @@ class TestImplementation:
         os.system("cp -a -R my-static-dir apache-test/t")
         os.system("cp -a -R 0* apache-test/t")
 
+    def skip_test(self, d):
+        return False
+
     def stop(self):
         os.system("rm -rf apache-test")
         os.system("rm -rf __pycache__")
         os.system("rm -rf httpd.conf")
 
     def generate_cfg(self, d):
-        cmd = 'export `cat {0}`; ../../httpd-cfg {1} {2} --debug; diff -u ../results/{3}/webconf.result {4}/*.conf'.format(d + "/test.env", d, d, d, d)
+        cmd = 'export `cat {0}`; ../../httpd-cfg {1} {2} --debug; cat {3}/*.conf > {3}/test.tmp; rm -rf {3}/*.conf; mv {3}/test.tmp {3}/httpd.conf; diff -u ../results/{3}/webconf.result {4}/*.conf'.format(d + "/test.env", d, d, d, d)
         return os.system(cmd)
 
     def start_server(self, d):
