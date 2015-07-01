@@ -28,7 +28,7 @@ class TestImplementation:
         os.system("rm -rf httpd.conf")
 
     def generate_cfg(self, d):
-        cmd = 'export `cat {0}`; ../../httpd-cfg {1} {2} --debug; cat {3}/*.conf > {3}/test.tmp; rm -rf {3}/*.conf; mv {3}/test.tmp {3}/httpd.conf; diff -u ../results/{3}/webconf.result {4}/*.conf'.format(d + "/test.env", d, d, d, d)
+        cmd = 'export `cat {0}`; ../../httpd-cfg {1} {2} --debug; cat `ls {3}/*.conf|sort` > {3}/test.tmp; rm -rf {3}/*.conf; mv {3}/test.tmp {3}/httpd.conf; diff -u ../results/{3}/webconf.result {4}/*.conf'.format(d + "/test.env", d, d, d, d)
         return os.system(cmd)
 
     def start_server(self, d):
