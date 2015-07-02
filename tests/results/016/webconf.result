@@ -10,6 +10,6 @@ Listen 9090
     ProxyRequests off
     ProxyPreserveHost on
     ProxyPass /owncloud http://localhost:8080/owncloud
-    ProxyPassReverse /owncloud/ http://localhost/owncloud
+    ProxyPassReverse /owncloud/ http://localhost/owncloud/
 </VirtualHost>
 

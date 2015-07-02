@@ -11,7 +11,6 @@ Listen 9090
 
     <Location "/blog">
         ProxyPass fcgi://localhost:8081/usr/share/wordpress/$1
-        ProxyPassReverse fcgi://localhost/usr/share/wordpress/$1
     </Location>
 
 </VirtualHost>

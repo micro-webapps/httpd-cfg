@@ -187,6 +187,9 @@ class HTTPDProxyGenerator:
         else:
             frontend_url = "/"
 
+        if backend_url[-1] != "/":
+            backend_url += "/"
+
         # In case of __regex__" in the proxy_cfg, we are parsing Match
         # directive. That means we have to use ProxyPassMatch instead
         # of ProxyPass.
@@ -196,23 +199,27 @@ class HTTPDProxyGenerator:
             # in Location definition.
             if "location" in self.p.nested_sections:
                 self.p.write("ProxyPassMatch {0}", backend_address)
-                self.p.write("ProxyPassReverse {0}", backend_url)
+                if parsed.scheme in ["http", "https"]:
+                    self.p.write("ProxyPassReverse {0}", backend_url)
             else:
                 if frontend_url[-1] != "/":
                     frontend_url += "/"
                 self.p.write("ProxyPassMatch ^{0}(.*{1}) {2}", frontend_url, proxy_cfg["__regex__"][:-1], backend_address)
-                self.p.write("ProxyPassReverse {0} {1}", frontend_url, backend_url)
+                if parsed.scheme in ["http", "https"]:
+                    self.p.write("ProxyPassReverse {0} {1}", frontend_url, backend_url)
         else:
             if "location" in self.p.nested_sections:
                 self.p.write("ProxyPass {0}", backend_address)
-                self.p.write("ProxyPassReverse {0}", backend_url)
+                if parsed.scheme in ["http", "https"]:
+                    self.p.write("ProxyPassReverse {0}", backend_url)
             else:
                 self.p.write("ProxyPass {0} {1}", frontend_url, backend_address)
                 # ProxyPassReverse should end with '/', otherwise the Location rewrite
                 # won't work correctly.
                 if frontend_url[-1] != "/":
                     frontend_url += "/"
-                self.p.write("ProxyPassReverse {0} {1}", frontend_url, backend_url)
+                if parsed.scheme in ["http", "https"]:
+                    self.p.write("ProxyPassReverse {0} {1}", frontend_url, backend_url)
 
     def write_sethandler(self, proxy_cfg):
         address = self.get_address(proxy_cfg)

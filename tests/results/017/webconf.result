@@ -28,7 +28,7 @@ Listen 9443 ssl
     ProxyRequests off
     ProxyPreserveHost on
     ProxyPass /owncloud http://localhost:8080/owncloud
-    ProxyPassReverse /owncloud/ http://localhost/owncloud
+    ProxyPassReverse /owncloud/ http://localhost/owncloud/
 </VirtualHost>
 
 <VirtualHost *:9443>
@@ -36,7 +36,7 @@ Listen 9443 ssl
     ProxyRequests off
     ProxyPreserveHost on
     ProxyPass /owncloud http://localhost:8080/owncloud
-    ProxyPassReverse /owncloud/ http://localhost/owncloud
+    ProxyPassReverse /owncloud/ http://localhost/owncloud/
     SSLEngine On
     SSLCertificateFile ./017/localhost.crt
     SSLCertificateKeyFile ./017/localhost.key

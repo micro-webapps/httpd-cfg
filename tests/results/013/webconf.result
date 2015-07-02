@@ -10,19 +10,16 @@ Listen 9090
 
     <Location "/blog">
         ProxyPass fcgi://localhost:8081/usr/share/wordpress/$1
-        ProxyPassReverse fcgi://localhost/usr/share/wordpress/$1
     </Location>
 
     <LocationMatch "^/blog/(.*\.txt)">
         ProxyPassMatch fcgi://localhost:8080/usr/share/wordpress/$1
-        ProxyPassReverse fcgi://localhost/usr/share/wordpress/$1
         Order Deny,Allow
         Allow from all
     </LocationMatch>
 
     <LocationMatch "^/blog/(.*\.php)">
         ProxyPassMatch fcgi://localhost:8081/usr/share/wordpress/$1
-        ProxyPassReverse fcgi://localhost/usr/share/wordpress/$1
         Order Deny,Allow
         Allow from all
     </LocationMatch>
