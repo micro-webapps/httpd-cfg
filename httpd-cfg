@@ -543,6 +543,12 @@ class HTTPDGenerator:
     def dir2loc(self, vhost_cfg):
         dir2loc = {}
 
+        for app_cfg in vhost_cfg:
+            if "locations" in app_cfg:
+                for location, loc_cfg in app_cfg["locations"].items():
+                    if "alias" in loc_cfg:
+                        dir2loc[loc_cfg["alias"]] = location
+
         # At first, get aliases out of the directories section.
         # For the directories with the "alias", we can create {dir:alias}
         # right now.
@@ -578,13 +584,11 @@ class HTTPDGenerator:
         dir2loc = self.dir2loc(vhost_cfg)
 
         for app_cfg in vhost_cfg:
-            # If there are no "directories", then there's nothing to convert.
-            if not "directories" in app_cfg:
-                continue
-
             # We have some directories, so prepare also locations to store them.
             if not "locations" in app_cfg:
                 app_cfg["locations"] = {}
+            if not "directories" in app_cfg:
+                app_cfg["directories"] = {}
 
             for directory, cfg in app_cfg["directories"].items():
                 directory = expand_variables(directory, app_cfg["__name__"])
@@ -620,7 +624,7 @@ class HTTPDGenerator:
 
             for location, cfg in app_cfg["locations"].items():
                 location = expand_variables(location, app_cfg["__name__"])
-                if len(directory) == 0:
+                if len(location) == 0:
                     continue
 
                 cfg_copy = dict(cfg)
@@ -650,7 +654,6 @@ class HTTPDGenerator:
                     app_cfg["directories"][alias].update(cfg_copy)
                     app_cfg["directories"][alias]["alias"] = location
 
-        print(vhost_cfg)
         return vhost_cfg
 
     def write_vhost_config(self, vhost, vhost_cfg, ssl = False):
