@@ -537,8 +537,125 @@ class HTTPDGenerator:
         self.run_directive_handlers(app_cfg, enable, disable)
         self.run_section_handlers(app_cfg, enable, disable)
 
+    # The nginx does not support changing the real directories, so we are
+    # trying to match directories with locations here. This method returns
+    # {"/var/www/real/fs/directory": "/blog/my/location", ...}.
+    def dir2loc(self, vhost_cfg):
+        dir2loc = {}
+
+        # At first, get aliases out of the directories section.
+        # For the directories with the "alias", we can create {dir:alias}
+        # right now.
+        for app_cfg in vhost_cfg:
+            if "directories" in app_cfg:
+                for directory, dir_cfg in app_cfg["directories"].items():
+                    if "alias" in dir_cfg:
+                        dir2loc[directory] = dir_cfg["alias"]
+                    else:
+                        dir2loc[directory] = ""
+
+        # Replace the directory prefix with the location. For example:
+        # intput: {"/var/www/wp": "/blog", "/var/www/wp/uploads": ""}
+        # output: {"/var/www/wp": "/blog", "/var/www/wp/uploads": "/blog/uploads"}
+        for d1, l1 in dir2loc.items():
+            for d2, l2 in dir2loc.items():
+                if d1.startswith(d2):
+                    dir2loc[d1] = d1.replace(d2, l2)
+
+        return dir2loc
+
+    def must_be_in_loc(self, key):
+        if key.startswith("proxy_"):
+            return True
+        if key == "match":
+            return True
+        return False
+
+    # The nginx does not support changing the real directories, so we are
+    # trying to convert directories to locations here.
+    def convert_dir_to_loc(self, vhost_cfg):
+        # Get the directory to location matching.
+        dir2loc = self.dir2loc(vhost_cfg)
+
+        for app_cfg in vhost_cfg:
+            # If there are no "directories", then there's nothing to convert.
+            if not "directories" in app_cfg:
+                continue
+
+            # We have some directories, so prepare also locations to store them.
+            if not "locations" in app_cfg:
+                app_cfg["locations"] = {}
+
+            for directory, cfg in app_cfg["directories"].items():
+                directory = expand_variables(directory, app_cfg["__name__"])
+                if len(directory) == 0:
+                    continue
+
+                cfg_copy = dict(cfg)
+
+                # Get the alias (location) of the directory.
+                if "alias" in cfg:
+                    alias = cfg["alias"]
+                    del cfg_copy["alias"]
+                elif directory in dir2loc:
+                    alias = dir2loc[directory]
+                else:
+                    continue
+
+                # Filter out things not allowed in Location
+                for key in list(cfg_copy):
+                    if self.must_be_in_loc(key):
+                        del cfg[key]
+                    else:
+                        del cfg_copy[key]                        
+
+                # Store the configuration of current directory into
+                # locations section of config.
+                if not alias in app_cfg["locations"]:
+                    app_cfg["locations"][alias] = cfg_copy
+                    app_cfg["locations"][alias]["alias"] = directory
+                else:
+                    app_cfg["locations"][alias].update(cfg_copy)
+                    app_cfg["locations"][alias]["alias"] = directory
+
+            for location, cfg in app_cfg["locations"].items():
+                location = expand_variables(location, app_cfg["__name__"])
+                if len(directory) == 0:
+                    continue
+
+                cfg_copy = dict(cfg)
+
+                # Get the alias (location) of the directory.
+                if "alias" in cfg:
+                    alias = cfg["alias"]
+                    del cfg["alias"]
+                else:
+                    continue
+
+               # Filter out things not allowed in Directories
+                for key in list(cfg_copy):
+                    if key == "alias":
+                        continue
+                    if self.must_be_in_loc(key):
+                        del cfg_copy[key]
+                    else:
+                        del cfg[key]
+
+                # Store the configuration of current location into
+                # locations section of config.
+                if not alias in app_cfg["directories"]:
+                    app_cfg["directories"][alias] = cfg_copy
+                    app_cfg["directories"][alias]["alias"] = location
+                else:
+                    app_cfg["directories"][alias].update(cfg_copy)
+                    app_cfg["directories"][alias]["alias"] = location
+
+        print(vhost_cfg)
+        return vhost_cfg
+
     def write_vhost_config(self, vhost, vhost_cfg, ssl = False):
         self.vhost_name = vhost
+        vhost_cfg = self.convert_dir_to_loc(vhost_cfg)
 
         if not ssl:
             enable_ssl = False
