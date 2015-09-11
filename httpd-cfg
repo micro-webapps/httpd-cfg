@@ -27,7 +27,7 @@ listen_9090_set = False
 listen_9443_set = False
 
 def print_help():
-    print("Usage:", sys.argv[0], "<config_file_or_directory> <output_directory>")
+    print("Usage:", sys.argv[0], "<input_directory_with_json_files> <output_directory>")
 
 # Loads the config "c" and store it to internal configs storage "cfgs".
 def load_config(cfgs, c):
@@ -43,16 +43,16 @@ def load_config(cfgs, c):
 
     # In case the ID is not unique and the config with this ID has been
     # already loaded, append UUID to it.
-    if name in cfgs["webapps"]:
+    if name in cfgs:
         name += str(uuid.uuid1())
 
     # For now we support also loading from "webconfig".
     # FIXME: This is not according to webconfig-spec. Micro-webapps confd.py has
     # to be fixed before removing this.
     if "webconfig" in c:
-        cfgs["webapps"][name] = c["webconfig"]
+        cfgs[name] = c["webconfig"]
     else:
-        cfgs["webapps"][name] = c
+        cfgs[name] = c
 
     return cfgs
 
@@ -86,8 +86,8 @@ def expand_variables(line, app_name):
 def get_webapps_per_vhost(cfgs):
     webapps_per_vhost = {}
     webapps_without_vhost = []
-    for app, app_cfg in cfgs["webapps"].items():
-        # We would loss the app name, so store it under __name__ key.
+    for app, app_cfg in cfgs.items():
+        # We would loose the app name, so store it under __name__ key.
         # FIXME: Maybe in the future we could create App class here.
         app_cfg["__name__"] = app
         if "virtualhost" in app_cfg:
@@ -735,7 +735,7 @@ class HTTPDGenerator:
             self.write("")
 
 def generate_config(inp, outp):
-    cfgs = {"webapps":{}}
+    cfgs = {}
 
     # Load multiple configs from directory or single JSON file.
     if os.path.isdir(inp):
