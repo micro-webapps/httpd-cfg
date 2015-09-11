@@ -13,20 +13,17 @@ The following table describes current level of webconf-spec implementation:
 
 | Option | Supported | Note |
 |--------|:---------:|------|
-| certificate| ✔ | |
-| certificate_key| ✔ | |
-| directories | ✔ | |
-| directories.alias | ✔ | |
+| balancers | ✘ | not supported yet |
+| certificate | ✔ | |
+| certificate_key | ✔ | |
 | document_root | ✔ | |
+| error_pages | ✘ | not supported yet |
 | index | ✘ | `disabled` and `autoindex` not supported yet. |
 | locations | ✔ | |
 | match | ✔ | |
 | match.allow | ✔ | |
-| proxy_alias | ✔ | |
-| proxy_backend_alias | ✔ | |
-| proxy_hostname | ✔ | |
-| proxy_port | ✔ | |
-| proxy_protocol | ✔ | |
+| proxy | ✔ | |
+| raw_config | ✘ | not supported yet |
 | redirects | ✔ | |
 | version | ✔ | |
 | virtualhost | ✔ | |
