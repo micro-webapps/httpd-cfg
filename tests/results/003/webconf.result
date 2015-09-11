@@ -2,8 +2,8 @@ Listen 9090
 <VirtualHost *:9090>
     ServerName localhost
     Alias /static "./my-static-dir"
-    <Directory "./my-static-dir">
-    </Directory>
+    <Location "/static">
+    </Location>
 
 </VirtualHost>
 
@@ -14,8 +14,8 @@ Listen 9443 ssl
     SSLCertificateFile ./003/localhost.crt
     SSLCertificateKeyFile ./003/localhost.key
     Alias /static "./my-static-dir"
-    <Directory "./my-static-dir">
-    </Directory>
+    <Location "/static">
+    </Location>
 
 </VirtualHost>
 

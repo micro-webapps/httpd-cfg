@@ -115,12 +115,21 @@ class HTTPDProxyGenerator:
     # Returns None if the address cannot be obtained or is not set
     # in the proxy_cfg.
     def get_address(self, proxy_cfg):
-        if "protocol" in proxy_cfg["proxy"]:
-            ret = expand_variables(proxy_cfg["proxy"]["protocol"], self.p.app_name)
+        ret = ""
+
+        if "url" in proxy_cfg["proxy"]:
+            url = urlparse(proxy_cfg["proxy"]["url"])
+
+            ret = expand_variables(url.scheme, self.p.app_name)
             if len(ret) == 0:
                 ret = "http://"
+            else:
+                ret += "://"
+
+            hostname = url.hostname
+            port = url.port
         else:
-            ret = "http://"
+            return None
 
         # For Kubernetes/Openshift, we allow getting the address and port of
         # the backend from the APP_NAME_PORT environment variable.
@@ -138,23 +147,7 @@ class HTTPDProxyGenerator:
         else:
             # The APP_NAME_PORT variable is not set, so fallback to
             # proxy_hostname and proxy_port.
-            if "hostname" in proxy_cfg["proxy"]:
-                if proxy_cfg["proxy"]["hostname"] == "env":
-                    print("proxy hostname is set to 'env', but {0} is not set".format(address_env))
-                    return None
-                else:
-                    ret += proxy_cfg["proxy"]["hostname"]
-            else:
-                return None
-
-            if "port" in proxy_cfg["proxy"]:
-                if proxy_cfg["proxy"]["hostname"] == "env":
-                    print("proxy port is set to 'env', but {0} is not set".format(address_env))
-                    return None
-                else:
-                    ret += ":" + str(proxy_cfg["proxy"]["port"])
-            else:
-                return None
+            ret += hostname + ":" + str(port)
 
         return ret
 
@@ -171,8 +164,14 @@ class HTTPDProxyGenerator:
         backend_url = parsed.scheme + "://" + self.p.vhost_name
 
         # Get proxy_backend_alias or set it to "/" if not set.
-        if "backend_alias" in proxy_cfg["proxy"] and len(expand_variables(proxy_cfg["proxy"]["backend_alias"], self.p.app_name)) != 0:
-            proxy_backend_alias = expand_variables(proxy_cfg["proxy"]["backend_alias"], self.p.app_name)
+        if "url" in proxy_cfg["proxy"]:
+            url = urlparse(proxy_cfg["proxy"]["url"])
+            proxy_backend_alias = url.path
+        else:
+            return
+    
+        if len(expand_variables(proxy_backend_alias, self.p.app_name)) != 0:
+            proxy_backend_alias = expand_variables(proxy_backend_alias, self.p.app_name)
         else:
             proxy_backend_alias = "/"
             
@@ -427,11 +426,21 @@ class HTTPDLocationsGenerator:
 
         self.p.nested_sections.insert(0, "location")
         self.p.run_section_handlers(cfg, disable = ["match"])
-        self.p.run_directive_handlers(cfg, disable = ["match"])
+        self.p.run_directive_handlers(cfg, disable = ["match", "index"])
         self.p.nested_sections.pop(0)
 
         self.p.write("</Location>")
         self.p.write("")
+
+        if "index" in cfg:
+            self.p.write("<Directory \"{0}\">", cfg["alias"])
+
+            self.p.nested_sections.insert(0, "directory")
+            self.p.run_directive_handlers(cfg, enable = "index")
+            self.p.nested_sections.pop(0)
+
+            self.p.write("</Directory>")
+            self.p.write("")
 
     def write_location(self, location, cfg, regex = None):
         if regex:
@@ -459,6 +468,17 @@ class HTTPDLocationsGenerator:
                     has_match = True
                 else:
                     has_only_match = False
+
+            # In case of "alias" in cfg, generate the "Alias" before
+            # the Location section, or generate DocumentRoot in case of 
+            # virtualhost and alias == "/".
+            if "alias" in cfg:
+                alias = expand_variables(cfg["alias"], self.p.app_name)
+                if len(alias) != 0:
+                    if alias == "/" and "virtualhost" in self.p.nested_sections:
+                        self.p.write("DocumentRoot {0}", cfg["alias"])
+                    else:
+                        self.p.write("Alias {0} \"{1}\"", location, cfg["alias"])
 
             # In case we have anything else except "match", write it as
             # "Location".
@@ -533,128 +553,9 @@ class HTTPDGenerator:
         self.run_directive_handlers(app_cfg, enable, disable)
         self.run_section_handlers(app_cfg, enable, disable)
 
-    # The nginx does not support changing the real directories, so we are
-    # trying to match directories with locations here. This method returns
-    # {"/var/www/real/fs/directory": "/blog/my/location", ...}.
-    def dir2loc(self, vhost_cfg):
-        dir2loc = {}
-
-        for app_cfg in vhost_cfg:
-            if "locations" in app_cfg:
-                for location, loc_cfg in app_cfg["locations"].items():
-                    if "alias" in loc_cfg:
-                        dir2loc[loc_cfg["alias"]] = location
-
-        # At first, get aliases out of the directories section.
-        # For the directories with the "alias", we can create {dir:alias}
-        # right now.
-        for app_cfg in vhost_cfg:
-            if "directories" in app_cfg:
-                for directory, dir_cfg in app_cfg["directories"].items():
-                    if "alias" in dir_cfg:
-                        dir2loc[directory] = dir_cfg["alias"]
-                    else:
-                        dir2loc[directory] = ""
-
-        # Replace the directory prefix with the location. For example:
-        # intput: {"/var/www/wp": "/blog", "/var/www/wp/uploads": ""}
-        # output: {"/var/www/wp": "/blog", "/var/www/wp/uploads": "/blog/uploads"}
-        for d1, l1 in dir2loc.items():
-            for d2, l2 in dir2loc.items():
-                if d1.startswith(d2):
-                    dir2loc[d1] = d1.replace(d2, l2)
-
-        return dir2loc
-
-    def must_be_in_loc(self, key):
-        if key.startswith("proxy"):
-            return True
-        if key == "match":
-            return True
-        return False
-
-    # The nginx does not support changing the real directories, so we are
-    # trying to convert directories to locations here.
-    def convert_dir_to_loc(self, vhost_cfg):
-        # Get the directory to location matching.
-        dir2loc = self.dir2loc(vhost_cfg)
-
-        for app_cfg in vhost_cfg:
-            # We have some directories, so prepare also locations to store them.
-            if not "locations" in app_cfg:
-                app_cfg["locations"] = {}
-            if not "directories" in app_cfg:
-                app_cfg["directories"] = {}
-
-            for directory, cfg in app_cfg["directories"].items():
-                directory = expand_variables(directory, app_cfg["__name__"])
-                if len(directory) == 0:
-                    continue
-
-                cfg_copy = dict(cfg)
-
-                # Get the alias (location) of the directory.
-                if "alias" in cfg:
-                    alias = cfg["alias"]
-                    del cfg_copy["alias"]
-                elif directory in dir2loc:
-                    alias = dir2loc[directory]
-                else:
-                    continue
-
-                # Filter out things not allowed in Location
-                for key in list(cfg_copy):
-                    if self.must_be_in_loc(key):
-                        del cfg[key]
-                    else:
-                        del cfg_copy[key]                        
-
-                # Store the configuration of current directory into
-                # locations section of config.
-                if not alias in app_cfg["locations"]:
-                    app_cfg["locations"][alias] = cfg_copy
-                    app_cfg["locations"][alias]["alias"] = directory
-                else:
-                    app_cfg["locations"][alias].update(cfg_copy)
-                    app_cfg["locations"][alias]["alias"] = directory
-
-            for location, cfg in app_cfg["locations"].items():
-                location = expand_variables(location, app_cfg["__name__"])
-                if len(location) == 0:
-                    continue
-
-                cfg_copy = dict(cfg)
-
-                # Get the alias (location) of the directory.
-                if "alias" in cfg:
-                    alias = cfg["alias"]
-                    del cfg["alias"]
-                else:
-                    continue
-
-               # Filter out things not allowed in Directories
-                for key in list(cfg_copy):
-                    if key == "alias":
-                        continue
-                    if self.must_be_in_loc(key):
-                        del cfg_copy[key]
-                    else:
-                        del cfg[key]
-
-                # Store the configuration of current location into
-                # locations section of config.
-                if not alias in app_cfg["directories"]:
-                    app_cfg["directories"][alias] = cfg_copy
-                    app_cfg["directories"][alias]["alias"] = location
-                else:
-                    app_cfg["directories"][alias].update(cfg_copy)
-                    app_cfg["directories"][alias]["alias"] = location
-
-        return vhost_cfg
 
     def write_vhost_config(self, vhost, vhost_cfg, ssl = False):
         self.vhost_name = vhost
-        vhost_cfg = self.convert_dir_to_loc(vhost_cfg)
 
         if not ssl:
             enable_ssl = False

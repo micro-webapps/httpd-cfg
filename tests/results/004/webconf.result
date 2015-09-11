@@ -11,8 +11,8 @@ Listen 9443 ssl
     SSLCertificateFile ./004/localhost.crt
     SSLCertificateKeyFile ./004/localhost.key
     Alias /static "./my-static-dir"
-    <Directory "./my-static-dir">
-    </Directory>
+    <Location "/static">
+    </Location>
 
 </VirtualHost>
 

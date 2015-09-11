@@ -2,6 +2,9 @@ Listen 9090
 <VirtualHost *:9090>
     ServerName localhost
     Alias /blog "./my-static-dir"
+    <Location "/blog">
+    </Location>
+
     <Directory "./my-static-dir">
         DirectoryIndex index.php
     </Directory>

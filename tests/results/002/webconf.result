@@ -3,8 +3,8 @@ Listen 9090
     ServerName localhost
     DirectoryIndex index.html
     Alias /static "./my-static-dir"
-    <Directory "./my-static-dir">
-    </Directory>
+    <Location "/static">
+    </Location>
 
 </VirtualHost>
 

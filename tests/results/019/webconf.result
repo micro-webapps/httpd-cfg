@@ -1,18 +1,14 @@
 Listen 9090
 <VirtualHost *:9090>
     ServerName localhost
-    Alias /static/test "./my-static-dir/test"
-    <Directory "./my-static-dir/test">
-    </Directory>
-
-    Alias /static "./my-static-dir"
-    <Directory "./my-static-dir">
-    </Directory>
-
     <LocationMatch "^/static/test/(.*\.(php|txt))">
         Order Deny,Allow
         Deny from all
     </LocationMatch>
+
+    Alias /static "./my-static-dir"
+    <Location "/static">
+    </Location>
 
 </VirtualHost>
 
