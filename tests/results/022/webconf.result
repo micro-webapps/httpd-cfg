@@ -1,0 +1,27 @@
+Listen 9090
+<VirtualHost *:9090>
+    ServerName localhost
+    Header add Set-Cookie "ROUTEID=.%{BALANCER_WORKER_ROUTE}e; path=/" env=BALANCER_ROUTE_CHANGED
+    <Proxy "balancer://my-balancer">
+        BalancerMember "fcgi://localhost:8080" loadfactor=1 route=node0
+        BalancerMember "fcgi://localhost:8081" loadfactor=4 route=node1
+        ProxySet lbmethod=byrequests
+        ProxySet stickysession=ROUTEID
+    </Proxy>
+
+    Alias /blog "./my-static-dir"
+    <Location "/blog">
+    </Location>
+
+    <Directory "./my-static-dir">
+        DirectoryIndex index.php
+    </Directory>
+
+    <LocationMatch "^/blog/(.*\.txt)">
+        ProxyPassMatch balancer://my-balancer/usr/share/wordpress/$1
+        Order Deny,Allow
+        Allow from all
+    </LocationMatch>
+
+</VirtualHost>
+

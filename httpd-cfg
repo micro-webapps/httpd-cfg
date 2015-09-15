@@ -147,7 +147,9 @@ class HTTPDProxyGenerator:
         else:
             # The APP_NAME_PORT variable is not set, so fallback to
             # proxy_hostname and proxy_port.
-            ret += hostname + ":" + str(port)
+            ret += hostname
+            if port:
+                ret += ":" + str(port)
 
         return ret
 
@@ -274,6 +276,66 @@ class HTTPDRedirectsGenerator:
             if redirect["to"][-1] != "/":
                 redirect["to"] += "/"
             self.p.write("Redirect {0} {1}", frm, redirect["to"])
+        return True
+
+class HTTPDBalancersGenerator:
+    def __init__(self, parent):
+        self.p = parent
+        self.name = "balancers"
+
+    def write_balancer(self, name, cfg):
+        if not "members" in cfg:
+            return True
+        if not "method" in cfg:
+            cfg["method"] = "round-robin"
+
+        generate_route =  False
+        stickysession = None
+        if "persistence" in cfg and "method" in cfg["persistence"] and cfg["persistence"]["method"] != "none":
+            if cfg["persistence"]["method"] == "generate_cookie":
+                self.p.write("Header add Set-Cookie \"{0}=.%{{BALANCER_WORKER_ROUTE}}e; path=/\" env=BALANCER_ROUTE_CHANGED", cfg["persistence"]["cookie_name"])
+                generate_route = True
+            if "cookie_name" in cfg["persistence"]:
+                stickysession = cfg["persistence"]["cookie_name"]
+            if "url_id" in cfg["persistence"]:
+                stickysession += "|" + cfg["persistence"]["url_id"]
+
+        self.p.write("<Proxy \"balancer://{0}\">", name)
+        self.p.nested_sections.insert(0, "balancer")
+
+        i = 0
+        for member in cfg["members"]:
+            args = ""
+            if "weight" in member:
+                args += " loadfactor=" + str(member["weight"])
+            if generate_route:
+                if len(sys.argv) == 4 and sys.argv[3] == "--debug":
+                    args += " route=node" + str(i)
+                    i += 1
+                else:
+                    args += " route=" + str(uuid.uuid1())
+
+            self.p.write("BalancerMember \"{0}\"{1}", member["url"], args)
+
+        if cfg["method"] == "round-robin":
+            self.p.write("ProxySet lbmethod=byrequests")
+        elif cfg["method"] == "least-connected":
+            self.p.write("ProxySet lbmethod=bybusyness")
+
+        if stickysession:
+            self.p.write("ProxySet stickysession={0}", stickysession)
+
+        self.p.nested_sections.pop(0)
+        self.p.write("</Proxy>")
+        self.p.write("")
+
+    def handle(self, cfg):
+        if not "balancers" in cfg:
+            return True
+
+        for name, balancer in cfg["balancers"].items():
+            self.write_balancer(name, balancer)
+
         return True
 
 class HTTPDCertificateGenerator:
@@ -472,6 +534,7 @@ class HTTPDGenerator:
         self.directive_handlers.append(HTTPDStringGenerator(self, "index", "DirectoryIndex"))
         self.directive_handlers.append(HTTPDStringGenerator(self, "document_root", "DocumentRoot"))
         self.directive_handlers.append(HTTPDCertificateGenerator(self))
+        self.directive_handlers.append(HTTPDBalancersGenerator(self))
 
         # Section handlers are supposed to do their stuff and call
         # run_directive_handlers or run_section_handlers
