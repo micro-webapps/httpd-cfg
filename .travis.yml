@@ -14,6 +14,7 @@ before_script:
   - sudo cp -a -R /etc/apache2/mods-available/socache* /etc/apache2/mods-enabled/
   - sudo cp -a -R /etc/apache2/mods-available/ssl* /etc/apache2/mods-enabled/
   - sudo cp -a -R /etc/apache2/mods-available/xml2enc* /etc/apache2/mods-enabled/
+  - sudo cp -a -R /etc/apache2/mods-available/lbmethod* /etc/apache2/mods-enabled/
 script:
   - ./runtests
 branches:
