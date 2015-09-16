@@ -1,0 +1,37 @@
+Listen 9090
+<VirtualHost *:9090>
+    ServerName localhost
+    <Proxy "balancer://my-balancer">
+        BalancerMember "http://localhost:8080" loadfactor=1
+        BalancerMember "http://localhost:8081" loadfactor=4
+        ProxySet lbmethod=byrequests
+    </Proxy>
+
+    <Proxy "balancer://my-balancer2">
+        BalancerMember "http://localhost:8080" loadfactor=4
+        BalancerMember "http://localhost:8081" loadfactor=1
+        ProxySet lbmethod=byrequests
+    </Proxy>
+
+    Alias /blog "./my-static-dir"
+    <Location "/blog">
+    </Location>
+
+    <Directory "./my-static-dir">
+        DirectoryIndex index.php
+    </Directory>
+
+    <LocationMatch "^/blog/(.*\.txt)">
+        ProxyPassMatch balancer://my-balancer/usr/share/wordpress/$1
+        Order Deny,Allow
+        Allow from all
+    </LocationMatch>
+
+    <LocationMatch "^/blog/(.*\.php)">
+        ProxyPassMatch balancer://my-balancer2/usr/share/wordpress/$1
+        Order Deny,Allow
+        Allow from all
+    </LocationMatch>
+
+</VirtualHost>
+
