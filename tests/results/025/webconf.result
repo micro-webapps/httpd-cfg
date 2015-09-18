@@ -1,0 +1,25 @@
+Listen 9090
+<VirtualHost *:9090>
+    ServerName localhost
+    <Proxy "balancer://my-balancer">
+        BalancerMember "http://localhost:8080" loadfactor=1
+        BalancerMember "http://localhost:8081" loadfactor=4
+        ProxySet lbmethod=byrequests
+    </Proxy>
+
+    <Proxy "balancer://my-balancer2">
+        BalancerMember "http://localhost:8080" loadfactor=4
+        BalancerMember "http://localhost:8081" loadfactor=1
+        ProxySet lbmethod=byrequests
+    </Proxy>
+
+    <Location "/foo">
+        ProxyPass balancer://my-balancer2/usr/share/wordpress/$1
+    </Location>
+
+    <Location "/blog">
+        ProxyPass balancer://my-balancer/usr/share/wordpress/$1
+    </Location>
+
+</VirtualHost>
+
