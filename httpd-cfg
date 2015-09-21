@@ -339,6 +339,20 @@ class HTTPDBalancersGenerator:
 
         return True
 
+class HTTPDErrorPagesGenerator:
+    def __init__(self, parent):
+        self.p = parent
+        self.name = "error_pages"
+
+    def handle(self, cfg):
+        if not "error_pages" in cfg:
+            return True
+
+        for code, path in cfg["error_pages"].items():
+            self.p.write("ErrorDocument {0} \"{1}\"", code, path)
+
+        return True
+
 class HTTPDCertificateGenerator:
     def __init__(self, parent):
         self.p = parent
@@ -537,6 +551,7 @@ class HTTPDGenerator:
         self.directive_handlers.append(HTTPDStringGenerator(self, "document_root", "DocumentRoot"))
         self.directive_handlers.append(HTTPDCertificateGenerator(self))
         self.directive_handlers.append(HTTPDBalancersGenerator(self))
+        self.directive_handlers.append(HTTPDErrorPagesGenerator(self))
 
         # Section handlers are supposed to do their stuff and call
         # run_directive_handlers or run_section_handlers

@@ -1,0 +1,12 @@
+Listen 9090
+<VirtualHost *:9090>
+    ServerName localhost
+    DirectoryIndex index.html
+    ErrorDocument 501 "/static/400.html"
+    ErrorDocument 400 "/static/400.html"
+    Alias /static "./my-static-dir"
+    <Location "/static">
+    </Location>
+
+</VirtualHost>
+

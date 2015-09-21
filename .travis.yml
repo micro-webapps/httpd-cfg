@@ -4,7 +4,7 @@ compiler:
 install:
   - sudo add-apt-repository ppa:ondrej/apache2 -y
   - sudo apt-get update
-  - sudo apt-get install python3 apache2 apache2-dev
+  - sudo apt-get install python3 apache2 apache2-dev netcat
 before_script:
   - sudo killall apache2
   - sudo cp .travis.httpd.conf /etc/apache2/httpd.conf
