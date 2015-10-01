@@ -112,7 +112,7 @@ class HTTPDProxyGenerator:
         self.p = parent
         self.name = "proxy"
 
-    # Returns address of proxy in protocol://address:port format.
+    # Returns address of proxy in scheme://address:port format.
     # Returns None if the address cannot be obtained or is not set
     # in the proxy_cfg.
     def get_address(self, proxy_cfg):
@@ -129,6 +129,13 @@ class HTTPDProxyGenerator:
 
             hostname = url.hostname
             port = url.port
+
+            # We must not replace the name of balancer with hostname from env.
+            if url.scheme == "balancer":
+                ret += hostname
+                if port:
+                    ret += ":" + str(port)
+                return ret
         else:
             return None
 
