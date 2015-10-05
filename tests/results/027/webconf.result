@@ -1,0 +1,40 @@
+Listen 9090
+<VirtualHost *:9090>
+    ServerName localhost2
+    ProxyRequests off
+    ProxyPreserveHost on
+    ProxyPass /owncloud http://localhost:8081/
+    ProxyPassReverse /owncloud/ http://localhost2/
+</VirtualHost>
+
+Listen 9443 ssl
+<VirtualHost *:9443>
+    ServerName localhost2
+    ProxyRequests off
+    ProxyPreserveHost on
+    ProxyPass /owncloud http://localhost:8081/
+    ProxyPassReverse /owncloud/ http://localhost2/
+    SSLEngine On
+    SSLCertificateFile 027/localhost2.crt
+    SSLCertificateKeyFile 027/localhost2.key
+</VirtualHost>
+
+<VirtualHost *:9090>
+    ServerName localhost
+    ProxyRequests off
+    ProxyPreserveHost on
+    ProxyPass /owncloud http://localhost:8080/owncloud
+    ProxyPassReverse /owncloud/ http://localhost/owncloud/
+</VirtualHost>
+
+<VirtualHost *:9443>
+    ServerName localhost
+    ProxyRequests off
+    ProxyPreserveHost on
+    ProxyPass /owncloud http://localhost:8080/owncloud
+    ProxyPassReverse /owncloud/ http://localhost/owncloud/
+    SSLEngine On
+    SSLCertificateFile 027/localhost.crt
+    SSLCertificateKeyFile 027/localhost.key
+</VirtualHost>
+
