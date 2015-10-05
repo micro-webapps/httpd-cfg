@@ -365,7 +365,7 @@ class HTTPDCertificateGenerator:
         self.p = parent
         self.name = "certificate"
 
-    def write_cert(self, cert, key = False):
+    def write_cert(self, cert):
         outdir = sys.argv[2]
         if cert.startswith("-----BEGIN CERTIFICATE"):
             filename = os.path.join(outdir, self.p.vhost_name + ".crt")

@@ -33,6 +33,8 @@ class TestImplementation:
 
     def start_server(self, d):
         os.system("killall " + HTTPD_BINARY + " >/dev/null 2>&1")
+        os.system("cp " + d +  "/*.crt " + os.getcwd() + "/apache-test/t/" + d + " 2>/dev/null")
+        os.system("cp " + d +  "/*.key " + os.getcwd() + "/apache-test/t/" + d + " 2>/dev/null")
         os.system("sed -i 's|\"\\./|\"" + os.getcwd() + "/apache-test/t/|g' " + d + "/*.conf")
         os.system(HTTPD_BINARY + " -f ./httpd.conf -d ./ -c \"Include ../../" + d + "/*.conf\"")
 
