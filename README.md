@@ -13,11 +13,11 @@ The following table describes current level of webconf-spec implementation:
 
 | Option | Supported | Note |
 |--------|:---------:|------|
-| balancers | ✘ | not supported yet |
+| balancers | ✔ | |
 | certificate | ✔ | |
 | certificate_key | ✔ | |
 | document_root | ✔ | |
-| error_pages | ✘ | not supported yet |
+| error_pages | ✔ | |
 | index | ✘ | `disabled` and `autoindex` not supported yet. |
 | locations | ✔ | |
 | match | ✔ | |
