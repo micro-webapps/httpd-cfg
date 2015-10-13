@@ -23,6 +23,7 @@ import json
 import os
 import uuid
 import collections
+#import semantic_version
 
 listen_9090_set = False
 listen_9443_set = False
@@ -559,6 +560,24 @@ class HTTPDLocationsGenerator:
 
         return True
 
+class HTTPDRawConfigGenerator:
+    def __init__(self, parent):
+        self.p = parent
+        self.name = "raw_config"
+
+    def handle(self, cfg):
+        if not "raw_config" in cfg:
+            return True
+
+        for semver, lines in cfg["raw_config"].items():
+            if not semver.startswith("httpd"):
+                continue
+
+            for line in lines:
+                self.p.write(line)
+
+        return True
+
 class HTTPDGenerator:
     def __init__(self, out):
         self.out = out
@@ -578,6 +597,7 @@ class HTTPDGenerator:
         self.directive_handlers.append(HTTPDCertificateGenerator(self))
         self.directive_handlers.append(HTTPDBalancersGenerator(self))
         self.directive_handlers.append(HTTPDErrorPagesGenerator(self))
+        self.directive_handlers.append(HTTPDRawConfigGenerator(self))
 
         # Section handlers are supposed to do their stuff and call
         # run_directive_handlers or run_section_handlers
