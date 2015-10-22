@@ -772,7 +772,9 @@ def generate_config(inp, outp):
 
     # Load multiple configs from directory or single JSON file.
     if os.path.isdir(inp):
-        for f in os.listdir(inp):
+        configs = os.listdir(inp)
+        configs.sort()
+        for f in configs:
             if f.endswith(".json"):
                 f = open(inp + "/" + f, "r")
                 c = json.load(f)
